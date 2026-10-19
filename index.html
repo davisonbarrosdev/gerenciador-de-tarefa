@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Tarefas</title>
+    <link rel="stylesheet" href="">
+</head>
+
+<body>
+    <header class="cabecalho">
+        <h1>Gerenciador de Tarefas</h1>
+        <p>Registre quem faz o quê e até quando.</p>
+    </header>
+
+    <main class="conteudo-principal">
+        <!--Formulário para cadastrar uma tarefa ->
+        <section class="nova-tarefa">
+            <h2>Nova Tarefa</h2>
+            <form id="form-tarefa>
+                <div class="campo">
+                <label for="Titulo"(obrigatório)</label>
+                <input type="text" id="Titulo" name="Titulo" required>
+                </div>
+
+                <div class="campo">
+                    <label for="descrição">Descrição</label>
+                    <textarea id="descrição" name="descrição" rows="4"></textarea>
+                </div>
+
+                <div class="campo">
+                    <label for="responsavel">Responsável (obrigatório)</label>
+                    <input type="text" id="responsavel" name="responsavel" required>
+                </div>
+
+                <div class="campo">
+                    <label for="prazo">Prazo</label>
+                    <input type="date" id="prazo" name="prazo">
+                </div>
+
+                <button type="submit">Adicionar tarefa</button>
+            </form>
+            
+        </section>
+
+        <!--Filtros e Tarefas -->
+        <section class="Tarefas">
+            <h2>Tarefas</h2>
+
+            <div class="filtro">
+                <div class="campo">
+                    <label for="filtro-status">Status</label>
+                    <select id="filtro-status" name="filtro-status">
+                        <option value="todos">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="em-andamento">Em Andamento</option>
+                        <option value="concluida">Concluída</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="filtro-responsavel">Responsável</label>
+                    <input type="search" id="filtro-responsavel" placeholder="Digite o nome do responsável">
+                </div>
+            </div>
+
+            <p>Mostrando de 2 de 2 tarefas</p>
+            <ul id="lista-tarefas"></ul>
+            <li>
+                <article class="tarefa">
+                    <header class="tarefa-cabecalho">
+                        <h3>Corrigir erro no checkout</h3>
+                        <div class="indicador">
+                            <span class="Status">Em Andamento</span>
+                            <span class="atrasada">Atrasada</span>
+                        </div>
+                    </header>
+                    <p>Pedido com cupom de desconto ficam travados na etapa de pagamentos.</p>
+                    <footer class="tarefa-rodape">
+                        <div class="tarefa-detalhes">
+                            <span class="Responsável:Ana Souza"></span>
+                            <span>Prazo:<time datetime="2026-10-15">15/10/2026</time></span>
+                        </div>
+                        <div class="tarefa-acoes">
+                            <button type="button">Editar</button>
+                            <button type="button">Excluir</button>
+                        </div>
+                    </footer>
+                </article>
+            </li>
+            <article class="tarefa">
+                <header class="tarefa-cabecalho">
+                    <h3>Enviar proposta ao cliente</h3>
+                    <span class="Status">Pendente</span>
+                </header>
+
+                <p>Versão final com o cronograma revisado.</p>
+                <footer class="tarefa-rodape">
+                    <div class="tarefa-detalhes">
+                        <span>Responsável: Carlos Santos</span>
+                        <span>Prazo:<time datetime="2026-10-20">20/10/2026</time></span>
+                    </div>
+
+                    <div class="tarefa-acoes">
+                        <button type="button">Editar</button>
+                        <button type="button">Excluir</button>
+                    </div>
+                </footer>
+            </article>
+            </li>
+            </ul>
+        </section>
+    </main>
+</body>
+
+</html>
