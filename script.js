@@ -1,4 +1,3 @@
-alert("JavaScript conectado!");
 const formulario = document.querySelector("#form-tarefa");
 const campoTitulo = document.querySelector("#titulo");
 const campoDescricao = document.querySelector("#descricao");
