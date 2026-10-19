@@ -1,135 +1,141 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    padding: 32px;
-    font-family: Arial, sans-serif;
-    color: #1f2937;
-    background-color: #f5f7fa;
+  margin: 0;
+  padding: 32px;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+  background-color: #f5f7fa;
 }
 
 .cabecalho,
-.cabecalho-principal{
-    max-width: 1200px;
-    margin-inline: auto;
+.conteudo-principal {
+  max-width: 1200px;
+  margin-inline: auto;
 }
 
 .conteudo-principal {
-    display: grid;
-    grid-template-columns: 320px minmax(0,1fr);
-    gap: 32px;
-    margin: 32px;
-    align-items: start;
-
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 32px;
+  align-items: start;
 }
 
 .nova-tarefa,
-.tarefas{
-    min-width: 0;
-    padding: 24px;
-    background-color: white;
-    border-radius: 12px;
+.tarefas {
+  min-width: 0;
+  padding: 24px;
+  background-color: white;
+  border-radius: 12px;
 }
 
 form,
-.campo{
-    display:flex
+.campo {
+  display: flex;
+  flex-direction: column;
 }
 
-form{
-    gap: 20px;
+form {
+  gap: 20px;
 }
 
-.campo{
-    gap: 8px;
+.campo {
+  gap: 8px;
 }
 
-imput, 
+input,
 textarea,
 select,
-button{
-    padding: 12px;
-    font: inherit;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
+button {
+  padding: 12px;
+  font: inherit;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
 }
 
-textarea{
-    resize: vertical;
-}
-button{
-    cursor: pointer;
-}
-button[type="submit"]{
-    background-color: #2563eb;
-    color: white;
-    border: none;
+textarea {
+  resize: vertical;
 }
 
-.filtro{
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr));
-    gap: 16px;
+button {
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  color: white;
+  background-color: #2563eb;
+  border: none;
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .filtros input,
-.filtros select{
-    width: 100%;
+.filtros select {
+  width: 100%;
 }
 
-.lista-tarefas{
-    display: grid;
-    gap: 16px;
-    padding: 0;
-    list-style: none;
+.lista-tarefas {
+  display: grid;
+  gap: 16px;
+  padding: 0;
+  list-style: none;
 }
 
-.tarefa{
-    padding: 20px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+.tarefa {
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
 }
 
 .tarefa-cabecalho,
-.tarefa-rodape{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
+.tarefa-rodape {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.tarefa h3{
-    margin: 0;
-    font-size: 17px;
+.tarefa h3 {
+  margin: 0;
+  font-size: 17px;
 }
 
 .tarefa-detalhes,
 .tarefa-acoes,
-.indicador{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+.indicadores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .status,
-.atrasada{
-    padding: 6px 10px;
-    font-size: 13px;
-    background-color: #eff6ff;
-    border-radius: 20px;
+.atrasada {
+  padding: 6px 10px;
+  font-size: 13px;
+  background-color: #eff6ff;
+  border-radius: 20px;
+}
+
+.atrasada {
+  color: #b91c1c;
+  background-color: #fee2e2;
 }
 
 @media (max-width: 800px) {
-    body {
-        padding: 16px;
-    }
-    .conteudo-principal,
-    .filtros{
-        grid-template-columns: 1fr;
-    }
-}
+  body {
+    padding: 16px;
+  }
 
-    
+  .conteudo-principal,
+  .filtros {
+    grid-template-columns: 1fr;
+  }
+}
