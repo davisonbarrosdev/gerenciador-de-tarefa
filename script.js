@@ -10,37 +10,38 @@ const filtroResponsavel = document.querySelector("#filtro-responsavel");
 const contador = document.querySelector(".tarefas > p");
 const botaoSalvar = formulario.querySelector('button[type="submit"]');
 
-const CHAVE = "gerenciador-tarefas";
+let tarefas = [];
 let idEmEdicao = null;
+let ocupado = false;
 
-// Carrega as tarefas salvas ou começa com uma lista vazia.
-function carregarTarefas() {
-  try {
-    const dados = JSON.parse(localStorage.getItem(CHAVE));
+// Faz uma chamada à API e trata respostas com erro.
+async function chamarAPI(caminho, metodo = "GET", dados) {
+  const opcoes = { method: metodo };
 
-    if (!Array.isArray(dados)) return [];
-
-    return dados.filter(tarefa =>
-      tarefa &&
-      typeof tarefa.id === "string" &&
-      typeof tarefa.titulo === "string" &&
-      typeof tarefa.descricao === "string" &&
-      typeof tarefa.responsavel === "string" &&
-      typeof tarefa.prazo === "string" &&
-      ["pendente", "em-andamento", "concluida"].includes(tarefa.status)
-    );
-  } catch {
-    return [];
+  if (dados !== undefined) {
+    opcoes.headers = { "Content-Type": "application/json" };
+    opcoes.body = JSON.stringify(dados);
   }
+
+  const resposta = await fetch(caminho, opcoes);
+
+  if (!resposta.ok) {
+    const mensagem = await resposta.text();
+    throw new Error(mensagem.trim() || "Erro ao acessar a API.");
+  }
+
+  if (resposta.status === 204) return null;
+
+  return resposta.json();
 }
 
-let tarefas = carregarTarefas();
-
-function salvarTarefas() {
+async function carregarTarefas() {
   try {
-    localStorage.setItem(CHAVE, JSON.stringify(tarefas));
-  } catch {
-    alert("Não foi possível salvar no navegador. As alterações ficam disponíveis nesta página até você fechá-la.");
+    tarefas = await chamarAPI("/tarefas");
+    renderizarTarefas();
+  } catch (erro) {
+    contador.textContent = "Não foi possível carregar as tarefas.";
+    alert(erro.message);
   }
 }
 
@@ -51,7 +52,6 @@ function formatarPrazo(prazo) {
   return `${dia}/${mes}/${ano}`;
 }
 
-// Usa a data local do computador para comparar os prazos.
 function dataDeHoje() {
   const hoje = new Date();
   const ano = hoje.getFullYear();
@@ -76,31 +76,48 @@ function criarBotao(texto, acao, id) {
   botao.type = "button";
   botao.dataset.acao = acao;
   botao.dataset.id = id;
+  botao.disabled = ocupado;
 
   return botao;
 }
 
-function renderizarTarefas() {
-  const statusSelecionado = filtroStatus.value;
-  const nomePesquisado = filtroResponsavel.value.trim().toLocaleLowerCase("pt-BR");
+function definirOcupado(valor) {
+  ocupado = valor;
+  botaoSalvar.disabled = valor;
 
-  const tarefasFiltradas = tarefas.filter(tarefa => {
-    const correspondeStatus =
-      !statusSelecionado || tarefa.status === statusSelecionado;
-
-    const correspondeResponsavel = tarefa.responsavel
-      .toLocaleLowerCase("pt-BR")
-      .includes(nomePesquisado);
-
-    return correspondeStatus && correspondeResponsavel;
+  lista.querySelectorAll("button, select").forEach(elemento => {
+    elemento.disabled = valor;
   });
+}
+
+function encerrarEdicao() {
+  idEmEdicao = null;
+  formulario.reset();
+  botaoSalvar.textContent = "Adicionar tarefa";
+}
+
+function renderizarTarefas() {
+  const pesquisa = filtroResponsavel.value
+    .trim()
+    .toLocaleLowerCase("pt-BR");
+
+  const filtradas = tarefas.filter(tarefa => {
+    const statusCorreto =
+      !filtroStatus.value || tarefa.status === filtroStatus.value;
+
+    const responsavelCorreto = tarefa.responsavel
+      .toLocaleLowerCase("pt-BR")
+      .includes(pesquisa);
+
+    return statusCorreto && responsavelCorreto;
+  });
+
+  contador.textContent =
+    `Mostrando ${filtradas.length} de ${tarefas.length} tarefas`;
 
   lista.replaceChildren();
 
-  contador.textContent =
-    `Mostrando ${tarefasFiltradas.length} de ${tarefas.length} tarefas`;
-
-  if (tarefasFiltradas.length === 0) {
+  if (filtradas.length === 0) {
     lista.append(criarElemento("li", "", "Nenhuma tarefa encontrada."));
     return;
   }
@@ -111,11 +128,10 @@ function renderizarTarefas() {
     concluida: "Concluída"
   };
 
-  tarefasFiltradas.forEach(tarefa => {
+  filtradas.forEach(tarefa => {
     const item = criarElemento("li");
     const artigo = criarElemento("article", "tarefa");
     const cabecalho = criarElemento("header", "tarefa-cabecalho");
-    const titulo = criarElemento("h3", "", tarefa.titulo);
     const indicadores = criarElemento("div", "indicadores");
 
     indicadores.append(
@@ -130,7 +146,11 @@ function renderizarTarefas() {
       indicadores.append(criarElemento("span", "atrasada", "Atrasada"));
     }
 
-    cabecalho.append(titulo, indicadores);
+    cabecalho.append(
+      criarElemento("h3", "", tarefa.titulo),
+      indicadores
+    );
+
     artigo.append(cabecalho);
 
     if (tarefa.descricao) {
@@ -146,25 +166,22 @@ function renderizarTarefas() {
     );
 
     const acoes = criarElemento("div", "tarefa-acoes");
+    const seletor = criarElemento("select");
 
-    // Permite mudar o status diretamente no cartão.
-    const seletorStatus = criarElemento("select");
-    seletorStatus.dataset.id = tarefa.id;
-    seletorStatus.setAttribute(
-      "aria-label",
-      `Status da tarefa: ${tarefa.titulo}`
-    );
+    seletor.dataset.id = tarefa.id;
+    seletor.disabled = ocupado;
+    seletor.setAttribute("aria-label", `Status: ${tarefa.titulo}`);
 
     Object.entries(nomesStatus).forEach(([valor, nome]) => {
       const opcao = criarElemento("option", "", nome);
       opcao.value = valor;
-      seletorStatus.append(opcao);
+      seletor.append(opcao);
     });
 
-    seletorStatus.value = tarefa.status;
+    seletor.value = tarefa.status;
 
     acoes.append(
-      seletorStatus,
+      seletor,
       criarBotao("Editar", "editar", tarefa.id),
       criarBotao("Excluir", "excluir", tarefa.id)
     );
@@ -176,64 +193,69 @@ function renderizarTarefas() {
   });
 }
 
-function encerrarEdicao() {
-  idEmEdicao = null;
-  formulario.reset();
-  botaoSalvar.textContent = "Adicionar tarefa";
-}
-
-// Adiciona uma tarefa ou salva a edição.
-formulario.addEventListener("submit", evento => {
+formulario.addEventListener("submit", async evento => {
   evento.preventDefault();
 
-  const titulo = campoTitulo.value.trim();
-  const responsavel = campoResponsavel.value.trim();
-
-  if (!titulo || !responsavel) {
-    alert("Preencha o título e o responsável.");
-
-    if (!titulo) campoTitulo.focus();
-    else campoResponsavel.focus();
-
-    return;
-  }
+  if (ocupado) return;
 
   const dados = {
-    titulo,
+    titulo: campoTitulo.value.trim(),
     descricao: campoDescricao.value.trim(),
-    responsavel,
+    responsavel: campoResponsavel.value.trim(),
     prazo: campoPrazo.value
   };
 
-  if (idEmEdicao !== null) {
-    tarefas = tarefas.map(tarefa =>
-      tarefa.id === idEmEdicao ? { ...tarefa, ...dados } : tarefa
-    );
-  } else {
-    tarefas.push({
-      id: crypto.randomUUID(),
-      ...dados,
-      status: "pendente"
-    });
+  if (!dados.titulo || !dados.responsavel) {
+    alert("Preencha o título e o responsável.");
+    return;
   }
 
-  salvarTarefas();
-  encerrarEdicao();
-  renderizarTarefas();
+  const tarefaAtual = tarefas.find(tarefa => tarefa.id === idEmEdicao);
+
+  if (idEmEdicao !== null && !tarefaAtual) {
+    alert("Tarefa não encontrada. Recarregue a página.");
+    return;
+  }
+
+  definirOcupado(true);
+
+  try {
+    if (tarefaAtual) {
+      const atualizada = await chamarAPI(
+        `/tarefas/${idEmEdicao}`,
+        "PUT",
+        { ...dados, status: tarefaAtual.status }
+      );
+
+      tarefas = tarefas.map(tarefa =>
+        tarefa.id === atualizada.id ? atualizada : tarefa
+      );
+    } else {
+      const criada = await chamarAPI("/tarefas", "POST", dados);
+      tarefas.unshift(criada);
+    }
+
+    encerrarEdicao();
+    renderizarTarefas();
+  } catch (erro) {
+    alert(erro.message);
+  } finally {
+    definirOcupado(false);
+  }
 });
 
-// Identifica qual botão da lista foi clicado.
-lista.addEventListener("click", evento => {
+lista.addEventListener("click", async evento => {
   const botao = evento.target.closest("button[data-acao]");
 
-  if (!botao) return;
+  if (!botao || ocupado) return;
 
-  const { id, acao } = botao.dataset;
+  // Os IDs do PostgreSQL são números.
+  const id = Number(botao.dataset.id);
   const tarefa = tarefas.find(tarefa => tarefa.id === id);
 
   if (!tarefa) return;
 
-  if (acao === "editar") {
+  if (botao.dataset.acao === "editar") {
     idEmEdicao = id;
 
     campoTitulo.value = tarefa.titulo;
@@ -243,37 +265,62 @@ lista.addEventListener("click", evento => {
 
     botaoSalvar.textContent = "Salvar alterações";
     campoTitulo.focus();
+    return;
   }
 
-  if (acao === "excluir") {
+  if (botao.dataset.acao === "excluir") {
     if (!confirm(`Excluir a tarefa "${tarefa.titulo}"?`)) return;
 
-    tarefas = tarefas.filter(tarefa => tarefa.id !== id);
+    definirOcupado(true);
 
-    if (idEmEdicao === id) encerrarEdicao();
+    try {
+      await chamarAPI(`/tarefas/${id}`, "DELETE");
 
-    salvarTarefas();
-    renderizarTarefas();
+      tarefas = tarefas.filter(tarefa => tarefa.id !== id);
+
+      if (idEmEdicao === id) encerrarEdicao();
+
+      renderizarTarefas();
+    } catch (erro) {
+      alert(erro.message);
+    } finally {
+      definirOcupado(false);
+    }
   }
 });
 
-// Atualiza o status de uma tarefa.
-lista.addEventListener("change", evento => {
+lista.addEventListener("change", async evento => {
   const seletor = evento.target;
 
-  if (!seletor.matches("select[data-id]")) return;
+  if (!seletor.matches("select[data-id]") || ocupado) return;
 
-  const tarefa = tarefas.find(tarefa => tarefa.id === seletor.dataset.id);
+  const id = Number(seletor.dataset.id);
+  const tarefa = tarefas.find(tarefa => tarefa.id === id);
 
   if (!tarefa) return;
 
-  tarefa.status = seletor.value;
+  definirOcupado(true);
 
-  salvarTarefas();
-  renderizarTarefas();
+  try {
+    const atualizada = await chamarAPI(`/tarefas/${id}`, "PUT", {
+      ...tarefa,
+      status: seletor.value
+    });
+
+    tarefas = tarefas.map(tarefa =>
+      tarefa.id === id ? atualizada : tarefa
+    );
+
+    renderizarTarefas();
+  } catch (erro) {
+    seletor.value = tarefa.status;
+    alert(erro.message);
+  } finally {
+    definirOcupado(false);
+  }
 });
 
 filtroStatus.addEventListener("change", renderizarTarefas);
 filtroResponsavel.addEventListener("input", renderizarTarefas);
 
-renderizarTarefas();
+carregarTarefas();

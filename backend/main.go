@@ -44,7 +44,7 @@ func executar() error {
 
 	mux.HandleFunc("/tarefas", gerenciarTarefas(banco))
 	mux.HandleFunc("/tarefas/", gerenciarTarefa(banco))
-
+	mux.Handle("/", http.FileServer(http.Dir("..")))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/health" {
 			http.NotFound(w, r)
